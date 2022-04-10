@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		
+	</head>
+	<body>
+		<h1>Noise generator</h1>
+		<canvas id="noiseCanvas" width="600" height="400"></canvas>
+		<div id="noiseControls">
+			<label for="fgColor">Foreground color </label>
+			<input id="fgColor" type="text" value="#0a0a0a"><br>
+			<label for="bgColor">Background color </label>
+			<input id="bgColor" type="text" value="#efefef"><br>
+			<label for="width">Canvas width </label>
+			<input id="width" type="number" onchange="widthChanged()" min="1" max="2048" value="600">
+			<label for="height">Canvas height </label>
+			<input id="height" type="number" onchange="heightChanged()" min="1" max="2048" value="400">
+			<input id="start" type="button" onclick="buttonStartClicked()" value="Go!">
+		</div>
+		
+		<script>
+			'use strict';
+			
+			const canvas = document.getElementById('noiseCanvas');
+			const canvasContext = canvas.getContext('2d');
+			let buffer = new Array(canvas.width * canvas.height);
+			
+			const inputFgColor = document.getElementById('fgColor');
+			const inputBgColor = document.getElementById('bgColor');
+			const inputWidth = document.getElementById('width');
+			const inputHeight = document.getElementById('height');
+			const labelWidth = document.getElementById('widthLabel');
+			const labelHeight = document.getElementById('heightLabel');
+			
+			let running = false;
+			const timerInterval = 1000;
+			let fgColor = '#0a0a0a';
+			let bgColor = '#efefef';
+			const reValidColor = /#[0-9|a-f]{6}/i;
+			
+			function updateBuffer() {
+				buffer.length = inputWidth.value * inputHeight.value;
+				
+				for (let i = 0; i < buffer.length; i++) {
+					buffer[i] = Math.round(Math.random());
+				}
+			}
+			
+			function updateCanvas() {
+				canvas.width = inputWidth.value;
+				canvas.height = inputHeight.value;
+				
+				let candidateFgColor = validateColor(inputFgColor.value);
+				let candidateBgColor = validateColor(inputBgColor.value);
+				if (candidateFgColor !== null) { fgColor = candidateFgColor; }
+				if (candidateBgColor !== null) { bgColor = candidateBgColor; }
+				
+				for (let y = 0; y < canvas.height - 1; y++) {
+					for (let x = 0; x < canvas.width - 1; x++) {
+						let currentBufferValue = buffer[y*canvas.width + x];
+						canvasContext.fillStyle = (currentBufferValue == 1) ? fgColor : bgColor;
+						canvasContext.fillRect(x, y, 1, 1);
+					}
+				}
+			}
+			
+			function validateColor(candidate) {
+				return (reValidColor.test(candidate)) ? candidate : null;
+			}
+			
+			function generateNoise() {
+				updateBuffer();
+				updateCanvas();
+			}
+			
+			function buttonStartClicked() {
+				generateNoise();
+			}
+			
+			function widthChanged() {
+				inputWidth.value = Math.min(Math.max(inputWidth.value, inputWidth.min), inputWidth.max);
+			}
+			
+			function heightChanged() {
+				inputHeight.value = Math.min(Math.max(inputHeight.value, inputHeight.min), inputHeight.max);
+			}
+		</script>
+	</body>
+</html>
